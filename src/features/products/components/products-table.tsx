@@ -1,6 +1,7 @@
 import Link from "next/link";
 
 import { ProductStatus } from "@/generated/prisma";
+import { DeleteProductButton } from "./delete-product-button";
 
 type ProductTableItem = {
   id: string;
@@ -77,13 +78,19 @@ export function ProductsTable({
                 </span>
               </td>
 
-              <td className="p-4 text-right">
-                <Link
-                  href={`/admin/products/${product.id}`}
-                  className="text-sm font-medium underline"
-                >
-                  Edit
-                </Link>
+              <td className="p-4">
+                <div className="flex items-center gap-4">
+                  <Link
+                    href={`/admin/products/${product.id}`}
+                    className="text-sm font-medium underline"
+                  >
+                    Edit
+                  </Link>
+
+                  <DeleteProductButton
+                    productId={product.id}
+                  />
+                </div>
               </td>
             </tr>
           ))}

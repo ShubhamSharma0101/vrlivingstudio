@@ -7,6 +7,9 @@ import { ProductsTable } from "@/features/products/components/products-table";
 export default async function ProductsPage() {
   const products =
     await prisma.product.findMany({
+      where: {
+      deletedAt: null,
+    },
       include: {
         category: true,
       },
