@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import {
   ClerkProvider,
   SignInButton,
@@ -29,6 +30,9 @@ export default function RootLayout({
             </h1>
 
             <div className="flex items-center gap-4">
+              <Link href="/orders">
+                My Orders
+              </Link>
               <Show when="signed-out">
                 <SignInButton />
                 <SignUpButton />
