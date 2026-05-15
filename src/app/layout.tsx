@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Script from "next/script";
 import Link from "next/link";
 import {
   ClerkProvider,
@@ -24,6 +25,10 @@ export default function RootLayout({
     <html lang="en">
       <body>
         <ClerkProvider>
+         <Script src="https://checkout.razorpay.com/v1/checkout.js" />
+
+
+
           <header className="flex items-center justify-between border-b p-4">
             <h1 className="font-bold">
               VR Living Studio

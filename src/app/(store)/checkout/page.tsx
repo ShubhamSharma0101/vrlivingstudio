@@ -5,7 +5,7 @@ import { getCurrentUser } from "@/lib/auth";
 import { prisma } from "@/server/db/prisma";
 
 import { AddressForm } from "@/features/checkout/components/address-form";
-import { PlaceOrderButton } from "@/features/checkout/components/place-order-button";
+import { PayNowButton } from "@/features/checkout/components/pay-now-button";
 
 export default async function CheckoutPage() {
   const user =
@@ -170,10 +170,8 @@ export default async function CheckoutPage() {
 
           {addresses[0] && (
               <div className="mt-6">
-                <PlaceOrderButton
-                  addressId={
-                    addresses[0].id
-                  }
+               <PayNowButton
+                  addressId={addresses[0].id}
                 />
               </div>
             )}

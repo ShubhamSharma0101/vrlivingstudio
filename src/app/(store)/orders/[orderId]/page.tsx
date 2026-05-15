@@ -4,6 +4,8 @@ import { prisma } from "@/server/db/prisma";
 
 import { OrderStatusBadge } from "@/features/orders/components/order-status-badge";
 
+import { RetryPaymentButton } from "@/features/orders/components/retry-payment-button";
+
 type Props = {
   params: Promise<{
     orderId: string;
@@ -50,6 +52,16 @@ export default async function OrderPage({
             order.status
           }
         />
+        {(order.paymentStatus ===
+          "FAILED" ||
+          order.paymentStatus ===
+            "PENDING") && (
+          <div className="mt-4">
+            <RetryPaymentButton
+              orderId={order.id}
+            />
+          </div>
+        )}
       </div>
 
       <div className="mt-8 rounded-xl border p-6">
