@@ -4,6 +4,8 @@ import { notFound } from "next/navigation";
 
 import { prisma } from "@/server/db/prisma";
 
+import { AddToCartButton } from "@/features/cart/components/add-to-cart-button";
+
 type Props = {
   params: Promise<{
     slug: string;
@@ -73,6 +75,11 @@ export default async function ProductPage({
             <p className="font-medium">
               Stock: {product.stock}
             </p>
+          </div>
+          <div className="pt-4">
+            <AddToCartButton
+              productId={product.id}
+            />
           </div>
         </div>
       </div>
