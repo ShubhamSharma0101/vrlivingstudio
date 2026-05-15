@@ -26,14 +26,14 @@ export default async function EditProductPage({
             include: {
                 inventoryMovements: {
                     orderBy: {
-                    createdAt: "desc",
+                        createdAt: "desc",
                     },
 
                     take: 20,
                 },
 
                 images: true,
-                },
+            },
         }),
         prisma.category.findMany({
             orderBy: { name: "asc" },
@@ -55,7 +55,7 @@ export default async function EditProductPage({
                     </p>
                 </div>
                 {/* Visual indicator of current stock state */}
-                <div className="rounded-lg border bg-card p-4 shadow-sm sm:min-w-[150px]">
+                <div className="rounded-lg border bg-card p-4 shadow-sm sm:min-w-37.5">
                     <div className="text-sm font-medium text-muted-foreground">Current Stock</div>
                     <div className="text-2xl font-bold mt-1">
                         {product.stock} <span className="text-sm font-normal text-muted-foreground">units</span>
@@ -65,33 +65,9 @@ export default async function EditProductPage({
 
             {/* Content Layout Grid */}
             <div className="grid gap-8 lg:grid-cols-3 items-start">
-                
+
                 {/* Main Product Details Form (Stock changes excluded/disabled here) */}
-                <div className="space-y-6 rounded-xl border p-6">
-  <div>
-    <h2 className="text-xl font-semibold">
-      Product Images
-    </h2>
-  </div>
-
-  <ProductImageUpload
-    onUpload={async ({ url }) => {
-      "use server";
-
-      await addProductImage({
-        productId: product.id,
-        url,
-      });
-    }}
-  />
-
-  <ProductImageGallery
-    images={product.images.map((image) => ({
-      id: image.id,
-      url: image.url,
-    }))}
-  />
-</div>
+               
                 <div className="lg:col-span-2 space-y-6">
                     <CreateProductForm
                         categories={categories}
@@ -102,11 +78,38 @@ export default async function EditProductPage({
                             price: product.price.toString(),
                             // We still pass it if the component schema requires it, 
                             // but your Form component should disable/hide the stock input if `initialData.id` exists.
-                            stock: product.stock, 
+                            stock: product.stock,
                             categoryId: product.categoryId,
                             status: product.status,
                         }}
                     />
+                     <div className="space-y-6 rounded-xl border p-6">
+                    <div>
+                        <h2 className="text-xl font-semibold">
+                            Product Images
+                        </h2>
+                    </div>
+
+                    <ProductImageUpload
+                        onUpload={async ({ url }) => {
+                            "use server";
+
+                            await addProductImage({
+                                productId: product.id,
+                                url,
+                            });
+                        }}
+                    />
+
+                   <ProductImageGallery
+                    productId={product.id}
+                    images={product.images.map((image) => ({
+                        id: image.id,
+                        url: image.url,
+                        isPrimary: image.isPrimary,
+                    }))}
+                    />
+                </div>
                 </div>
 
                 {/* Sidebar: Dedicated Inventory Control Tower */}
