@@ -26,7 +26,6 @@ export async function updateProduct(input: UpdateProductInput) {
       slug,
       description: validated.description,
       price: validated.price,
-      stock: validated.stock,
       categoryId: validated.categoryId,
       status: validated.status,
     },

@@ -18,10 +18,7 @@ export const updateProductSchema = z.object({
     .number()
     .positive(),
 
-  stock: z.coerce
-    .number()
-    .int()
-    .min(0),
+  
 
   categoryId: z.string(),
 
