@@ -1,29 +1,53 @@
+import Link from "next/link";
+
 import { prisma } from "@/server/db/prisma";
 
-import { CreateProductForm } from "@/features/products/components/create-product-form";
+import { ProductsTable } from "@/features/products/components/products-table";
 
 export default async function ProductsPage() {
-  const categories =
-    await prisma.category.findMany({
+  const products =
+    await prisma.product.findMany({
+      include: {
+        category: true,
+      },
+
       orderBy: {
-        name: "asc",
+        createdAt: "desc",
       },
     });
 
   return (
-    <div className="max-w-2xl space-y-8">
-      <div>
-        <h1 className="text-3xl font-bold">
-          Products
-        </h1>
+    <div className="space-y-8">
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-bold">
+            Products
+          </h1>
 
-        <p className="text-muted-foreground">
-          Create new products
-        </p>
+          <p className="text-muted-foreground">
+            Manage your store products
+          </p>
+        </div>
+
+        <Link
+          href="/admin/products/new"
+          className="rounded-md bg-black px-4 py-2 text-white"
+        >
+          Create Product
+        </Link>
       </div>
 
-      <CreateProductForm
-        categories={categories}
+      <ProductsTable
+        products={products.map((product) => ({
+          id: product.id,
+          title: product.title,
+          price: product.price.toString(),
+          stock: product.stock,
+          status: product.status,
+          category: {
+            name: product.category.name,
+          },
+        }))}
       />
     </div>
   );
