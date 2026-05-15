@@ -5,6 +5,11 @@ import { prisma } from "@/server/db/prisma";
 import { CreateProductForm } from "@/features/products/components/create-product-form";
 import { AdjustStockForm } from "@/features/products/components/adjust-stock-form";
 import { InventoryTimeline } from "@/features/products/components/inventory-timeline";
+import { ProductImageUpload } from "@/features/products/components/product-image-upload";
+
+import { ProductImageGallery } from "@/features/products/components/product-image-gallery";
+
+import { addProductImage } from "@/features/products/actions/add-product-image";
 
 export default async function EditProductPage({
     params,
@@ -20,10 +25,15 @@ export default async function EditProductPage({
             where: { id: productId },
             include: {
                 inventoryMovements: {
-                    orderBy: { createdAt: "desc" },
+                    orderBy: {
+                    createdAt: "desc",
+                    },
+
                     take: 20,
                 },
-            },
+
+                images: true,
+                },
         }),
         prisma.category.findMany({
             orderBy: { name: "asc" },
@@ -57,6 +67,31 @@ export default async function EditProductPage({
             <div className="grid gap-8 lg:grid-cols-3 items-start">
                 
                 {/* Main Product Details Form (Stock changes excluded/disabled here) */}
+                <div className="space-y-6 rounded-xl border p-6">
+  <div>
+    <h2 className="text-xl font-semibold">
+      Product Images
+    </h2>
+  </div>
+
+  <ProductImageUpload
+    onUpload={async ({ url }) => {
+      "use server";
+
+      await addProductImage({
+        productId: product.id,
+        url,
+      });
+    }}
+  />
+
+  <ProductImageGallery
+    images={product.images.map((image) => ({
+      id: image.id,
+      url: image.url,
+    }))}
+  />
+</div>
                 <div className="lg:col-span-2 space-y-6">
                     <CreateProductForm
                         categories={categories}
