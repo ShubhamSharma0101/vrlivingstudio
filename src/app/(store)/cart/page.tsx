@@ -5,6 +5,7 @@ import { getCurrentUser } from "@/lib/auth";
 import { prisma } from "@/server/db/prisma";
 import { CartItemActions } from "@/features/cart/components/cart-item-actions";
 
+
 export default async function CartPage() {
   const user = await getCurrentUser();
 
@@ -113,9 +114,13 @@ export default async function CartPage() {
             <span>Subtotal</span>
             <span className="font-bold">₹{subtotal.toFixed(2)}</span>
           </div>
-          <button className="w-full rounded-md bg-black px-6 py-3 text-white transition hover:bg-black/90 active:scale-[0.98]">
+
+          <Link
+            href="/checkout"
+            className="block w-full rounded-md bg-black px-6 py-3 text-center text-white"
+          >
             Proceed To Checkout
-          </button>
+          </Link>
         </div>
       </div>
     </div>
