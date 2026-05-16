@@ -11,6 +11,9 @@ import { ProductImageGallery } from "@/features/products/components/product-imag
 
 import { addProductImage } from "@/features/products/actions/add-product-image";
 
+import { DeleteProductButton } from "@/features/products/components/delete-product-button";
+import { RestoreProductButton } from "@/features/products/components/restore-product-button";
+
 export default async function EditProductPage({
     params,
 }: {
@@ -63,11 +66,27 @@ export default async function EditProductPage({
                 </div>
             </div>
 
+            <div className="mt-8 flex items-center justify-between">
+                    <div className="text-sm text-neutral-500">
+                        Archive removes the product from the storefront but keeps history intact.
+                    </div>
+
+                    <div className="mt-8 flex items-center justify-end gap-3">
+                        {product.deletedAt ? (
+                            <RestoreProductButton productId={product.id} />
+                        ) : (
+                            <DeleteProductButton productId={product.id} />
+                        )}
+                    </div>
+                </div>
+
             {/* Content Layout Grid */}
             <div className="grid gap-8 lg:grid-cols-3 items-start">
+                
+
 
                 {/* Main Product Details Form (Stock changes excluded/disabled here) */}
-               
+
                 <div className="lg:col-span-2 space-y-6">
                     <CreateProductForm
                         categories={categories}
@@ -83,33 +102,33 @@ export default async function EditProductPage({
                             status: product.status,
                         }}
                     />
-                     <div className="space-y-6 rounded-xl border p-6">
-                    <div>
-                        <h2 className="text-xl font-semibold">
-                            Product Images
-                        </h2>
+                    <div className="space-y-6 rounded-xl border p-6">
+                        <div>
+                            <h2 className="text-xl font-semibold">
+                                Product Images
+                            </h2>
+                        </div>
+
+                        <ProductImageUpload
+                            onUpload={async ({ url }) => {
+                                "use server";
+
+                                await addProductImage({
+                                    productId: product.id,
+                                    url,
+                                });
+                            }}
+                        />
+
+                        <ProductImageGallery
+                            productId={product.id}
+                            images={product.images.map((image) => ({
+                                id: image.id,
+                                url: image.url,
+                                isPrimary: image.isPrimary,
+                            }))}
+                        />
                     </div>
-
-                    <ProductImageUpload
-                        onUpload={async ({ url }) => {
-                            "use server";
-
-                            await addProductImage({
-                                productId: product.id,
-                                url,
-                            });
-                        }}
-                    />
-
-                   <ProductImageGallery
-                    productId={product.id}
-                    images={product.images.map((image) => ({
-                        id: image.id,
-                        url: image.url,
-                        isPrimary: image.isPrimary,
-                    }))}
-                    />
-                </div>
                 </div>
 
                 {/* Sidebar: Dedicated Inventory Control Tower */}
