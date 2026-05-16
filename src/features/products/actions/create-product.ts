@@ -2,6 +2,8 @@
 
 import slugify from "slugify";
 import { prisma } from "@/server/db/prisma";
+import { revalidatePath } from "next/cache";
+import { revalidateTag } from "next/cache";
 import {
   createProductSchema,
   type CreateProductInput,
@@ -28,6 +30,12 @@ export async function createProduct(input: CreateProductInput) {
       status: "ACTIVE",
     },
   });
+
+// Clear the main products listing grid
+  revalidatePath("/products");
+  
+  // Force cache refresh
+  revalidateTag("products", { expire: 0 });
 
   // Map the record to a plain, Next.js-friendly object
   return {

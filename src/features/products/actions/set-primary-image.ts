@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { revalidateTag } from "next/cache";
 
 import { prisma } from "@/server/db/prisma";
 
@@ -35,6 +36,11 @@ export async function setPrimaryImage(
   revalidatePath(
     `/admin/products/${input.productId}`
   );
+
+
+// Force reload data to catch new image maps
+  revalidatePath("/products"); 
+  revalidateTag("products", { expire: 0 });
 
   return {
     success: true,

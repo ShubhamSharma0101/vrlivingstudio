@@ -2,6 +2,9 @@
 
 import slugify from "slugify";
 import { prisma } from "@/server/db/prisma";
+import { revalidatePath } from "next/cache";
+import { revalidateTag } from "next/cache";
+
 import {
   updateProductSchema,
   type UpdateProductInput,
@@ -30,6 +33,14 @@ export async function updateProduct(input: UpdateProductInput) {
       status: validated.status,
     },
   });
+
+
+// Clear lists and the specific updated product page
+  revalidatePath("/products");
+  revalidatePath(`/products/${product.slug}`); // Ensure your update query saves to 'updatedProduct'
+  
+  // Force clean the data cache
+  revalidateTag("products", { expire: 0 });
 
   // 2. FIXED: Strip out the Prisma Decimal instance safely before returning to Client
   return {

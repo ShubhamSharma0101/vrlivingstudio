@@ -2,30 +2,12 @@ import Image from "next/image";
 
 import Link from "next/link";
 
-import { prisma } from "@/server/db/prisma";
+import { getCachedProducts,} from "@/server/cache/storefront-cache";
+
+
 
 export default async function ProductsPage() {
-  const products =
-    await prisma.product.findMany({
-      where: {
-        deletedAt: null,
-        status: "ACTIVE",
-      },
-
-      include: {
-        images: {
-          where: {
-            isPrimary: true,
-          },
-
-          take: 1,
-        },
-      },
-
-      orderBy: {
-        createdAt: "desc",
-      },
-    });
+  const products = await getCachedProducts();
 
   return (
     <div className="container mx-auto py-10">
@@ -55,7 +37,7 @@ export default async function ProductsPage() {
                     unoptimized
                     sizes="(max-width: 768px) 100vw, 50vw"
                     className="object-cover"
-                    />
+                  />
                 ) : null}
               </div>
 

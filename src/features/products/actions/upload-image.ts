@@ -1,6 +1,7 @@
 "use server";
 
 import { createClient } from "@supabase/supabase-js";
+import { revalidateTag } from "next/cache";
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
@@ -41,6 +42,10 @@ export async function uploadProductImage(formData: FormData) {
     } else if (error && typeof error === "object" && "message" in error) {
       errorMessage = String(error.message);
     }
+
+
+      revalidateTag("products", "max");
+revalidateTag("categories", "max");
 
     return { success: false, error: errorMessage };
   }
