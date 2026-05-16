@@ -8,10 +8,7 @@ export default function StoreLayout({
   return (
     <>
       <StorefrontHeader />
-
-      <main>
-        {children}
-      </main>
+      <main>{children}</main>
     </>
   );
 }

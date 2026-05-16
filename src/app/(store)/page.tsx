@@ -9,6 +9,7 @@ import { PremiumFooter } from "@/features/home/components/premium-footer";
 export default function HomePage() {
   return (
     <>
+    
       <HeroSection />
 
       <FeaturedCategories />
