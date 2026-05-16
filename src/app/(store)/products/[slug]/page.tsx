@@ -192,9 +192,18 @@ export default async function ProductPage({
             </p>
           </div>
           <div className="pt-4">
-            <AddToCartButton
-              productId={product.id}
-            />
+            {product.stock > 0 ? (
+              <AddToCartButton
+                productId={product.id}
+              />
+            ) : (
+              <button
+                disabled
+                className="rounded-md bg-gray-300 px-6 py-3 text-gray-600"
+              >
+                Out Of Stock
+              </button>
+            )}
           </div>
         </div>
       </div>
