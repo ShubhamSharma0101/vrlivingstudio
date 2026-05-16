@@ -1,10 +1,10 @@
-import Image from "next/image";
 import { notFound } from "next/navigation";
-import { AddToCartButton } from "@/features/cart/components/add-to-cart-button";
-import { getCachedProduct } from "@/server/cache/storefront-cache";
 import type { Metadata } from "next";
 
-
+import { getCachedProduct } from "@/server/cache/storefront-cache";
+import { ProductGallery } from "@/features/products/components/product-gallery";
+import { ProductBuyCard } from "@/features/products/components/product-buy-card";
+import { ProductTrustBadges } from "@/features/products/components/product-trust-badges";
 
 type Props = {
   params: Promise<{
@@ -68,7 +68,6 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 export default async function ProductPage({ params }: Props) {
   const { slug } = await params;
 
-  // 🚀 Swapped out raw Prisma call for the bug-fixed dynamic key cache handler
   const product = await getCachedProduct(slug);
 
   // Safety Gate: Ensure missing, deleted, or draft data streams trigger Next.js 404
@@ -77,65 +76,23 @@ export default async function ProductPage({ params }: Props) {
   }
 
   return (
-    <div className="container mx-auto py-10">
-      <div className="grid gap-10 lg:grid-cols-2">
-        
-        {/* Product Media Gallery Display Row */}
-        <div className="space-y-4">
-          {product.images.map((image) => (
-            <div
-              key={image.id}
-              className="relative aspect-square overflow-hidden rounded-xl border"
-            >
-              <Image
-                src={image.url}
-                alt={product.title}
-                fill
-                unoptimized
-                sizes="(max-width: 768px) 100vw, 50vw"
-                className="object-cover"
-              />
-            </div>
-          ))}
-        </div>
-
-        {/* Product Information Context Column */}
-        <div className="space-y-6">
-          <h1 className="text-4xl font-bold">{product.title}</h1>
-
-          <p className="text-2xl font-semibold">
-            ₹{Number(product.price).toFixed(2)}
-          </p>
-
-          <p className="text-muted-foreground whitespace-pre-line">
-            {product.description}
-          </p>
+    <div className="bg-[#faf8f5] py-20">
+      <div className="container mx-auto px-4">
+        <div className="grid gap-16 lg:grid-cols-[1.2fr_0.8fr]">
+          <ProductGallery images={product.images} />
 
           <div>
-            <p className="font-medium">
-              Stock status:{" "}
-              {product.stock > 0 ? (
-                <span className="text-emerald-600">{product.stock} units left</span>
-              ) : (
-                <span className="text-destructive">Out of Stock</span>
-              )}
-            </p>
-          </div>
+            <ProductBuyCard
+              id={product.id}
+              title={product.title}
+              description={product.description}
+              price={Number(product.price)}
+              stock={product.stock}
+            />
 
-          <div className="pt-4">
-            {product.stock > 0 ? (
-              <AddToCartButton productId={product.id} />
-            ) : (
-              <button
-                disabled
-                className="rounded-md bg-gray-300 px-6 py-3 text-gray-500 cursor-not-allowed font-medium"
-              >
-                Out Of Stock
-              </button>
-            )}
+            <ProductTrustBadges />
           </div>
         </div>
-
       </div>
     </div>
   );
