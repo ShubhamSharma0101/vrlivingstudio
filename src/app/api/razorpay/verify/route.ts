@@ -1,180 +1,132 @@
 import crypto from "crypto";
-
 import { NextResponse } from "next/server";
-
 import { prisma } from "@/server/db/prisma";
+import { sendOrderEmail } from "@/features/emails/actions/send-order-email";
+import { sendAdminOrderAlert } from "@/features/emails/actions/send-admin-order-alert";
 
-export async function POST(
-  request: Request
-) {
+export async function POST(request: Request) {
   try {
-    const body =
-      await request.json();
+    const body = await request.json();
+    const { razorpay_order_id, razorpay_payment_id, razorpay_signature } = body;
 
-    const {
-      razorpay_order_id,
-      razorpay_payment_id,
-      razorpay_signature,
-    } = body;
+    // 1. Verify signature authenticity
+    const generatedSignature = crypto
+      .createHmac("sha256", process.env.RAZORPAY_KEY_SECRET!)
+      .update(`${razorpay_order_id}|${razorpay_payment_id}`)
+      .digest("hex");
 
-    const generatedSignature =
-      crypto
-        .createHmac(
-          "sha256",
-          process.env
-            .RAZORPAY_KEY_SECRET!
-        )
-        .update(
-          `${razorpay_order_id}|${razorpay_payment_id}`
-        )
-        .digest(
-          "hex"
-        );
-
-    const isValid =
-      generatedSignature ===
-      razorpay_signature;
-
-    if (!isValid) {
+    if (generatedSignature !== razorpay_signature) {
       return NextResponse.json(
-        {
-          success:
-            false,
-        },
-        {
-          status:
-            400,
-        }
+        { success: false, error: "Invalid payment signature" },
+        { status: 400 }
       );
     }
 
-    const order =
-      await prisma.order.findFirst({
-        where: {
-          razorpayOrderId:
-            razorpay_order_id,
-        },
+    // 2. Locate associated context order
+    const order = await prisma.order.findFirst({
+      where: { razorpayOrderId: razorpay_order_id },
+      include: { items: true },
+    });
 
-        include: {
-          items: true,
+    if (!order) {
+      return NextResponse.json(
+        { success: false, error: "Order context not found" },
+        { status: 404 }
+      );
+    }
+
+    // Idempotency Guard: prevent double execution if endpoint re-triggers
+    if (order.paymentStatus === "PAID") {
+      return NextResponse.json({ success: true, orderId: order.id });
+    }
+
+    // 3. Use an atomic transaction for database modifications
+    await prisma.$transaction(async (tx) => {
+      // Create permanent ledger record
+      await tx.paymentTransaction.create({
+        data: {
+          orderId: order.id,
+          razorpayPaymentId: razorpay_payment_id,
+          amount: order.totalAmount,
+          status: "PAID",
         },
       });
 
-    if (!order) {
-      throw new Error(
-        "Order not found"
-      );
-    }
+      // Advance checkout status values
+      await tx.order.update({
+        where: { id: order.id },
+        data: {
+          paymentStatus: "PAID",
+          status: "CONFIRMED",
+          razorpayPaymentId: razorpay_payment_id,
+        },
+      });
 
-    if (
-        order.paymentStatus ===
-        "PAID"
-      ) {
-        return NextResponse.json({
-          success: true,
-          orderId: order.id,
+      // Synchronize item quantities & create timeline entries
+      for (const item of order.items) {
+        await tx.product.update({
+          where: { id: item.productId },
+          data: {
+            stock: { decrement: item.quantity },
+          },
+        });
+
+        await tx.inventoryMovement.create({
+          data: {
+            productId: item.productId,
+            quantity: -item.quantity,
+            type: "PURCHASE",
+            note: `Paid order ${order.id}`,
+          },
         });
       }
 
-    await prisma.paymentTransaction.create({
-      data: {
-        orderId: order.id,
-
-        razorpayPaymentId:
-          razorpay_payment_id,
-
-        amount:
-          order.totalAmount,
-
-        status: "PAID",
-      },
-    });
-
-    // PAYMENT SUCCESS
-    await prisma.order.update({
-      where: {
-        id: order.id,
-      },
-
-      data: {
-        paymentStatus:
-          "PAID",
-
-        status:
-          "CONFIRMED",
-
-        razorpayPaymentId:
-          razorpay_payment_id,
-      },
-    });
-
-    // DEDUCT STOCK
-    for (const item of order.items) {
-      await prisma.product.update({
-        where: {
-          id:
-            item.productId,
-        },
-
-        data: {
-          stock: {
-            decrement:
-              item.quantity,
-          },
-        },
+      // Empty shopping state
+      await tx.cartItem.deleteMany({
+        where: { userId: order.userId },
       });
+    });
 
-      await prisma.inventoryMovement.create(
-        {
-          data: {
-            productId:
-              item.productId,
+    // 4. Side Effects: Executed outside database transactions to avoid connection pooling timeouts
+    const user = await prisma.user.findUnique({
+      where: { id: order.userId },
+    });
 
-            quantity:
-              -item.quantity,
-
-            type:
-              "PURCHASE",
-
-            note: `Paid order ${order.id}`,
-          },
-        }
-      );
+    if (user?.email) {
+      try {
+        await sendOrderEmail({
+          email: user.email,
+          customerName: user.name ?? "Customer",
+          orderId: order.id,
+          total: Number(order.totalAmount),
+        });
+      } catch (emailError) {
+        // Log notification errors separately so transaction success still goes through
+        console.error("Background notification task failed:", emailError);
+      }
     }
 
-    // CLEAR CART
-    await prisma.cartItem.deleteMany(
-      {
-        where: {
-          userId:
-            order.userId,
-        },
-      }
-    );
+    if (user?.email) {
+  await sendAdminOrderAlert({
+    orderId:
+      order.id,
 
-    return NextResponse.json(
-      {
-        success:
-          true,
+    customerEmail:
+      user.email,
 
-        orderId:
-          order.id,
-      }
-    );
+    total:
+      Number(
+        order.totalAmount
+      ),
+  });
+}
+
+    return NextResponse.json({ success: true, orderId: order.id });
   } catch (error) {
-    console.error(
-      error
-    );
-
+    console.error("Webhook Verification Error Failure Context:", error);
     return NextResponse.json(
-      {
-        success:
-          false,
-      },
-      {
-        status:
-          500,
-      }
+      { success: false, error: "Internal server pipeline issue" },
+      { status: 500 }
     );
   }
 }

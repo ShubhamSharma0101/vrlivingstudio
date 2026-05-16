@@ -22,7 +22,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <body>
         <ClerkProvider>
          <Script src="https://checkout.razorpay.com/v1/checkout.js" />
@@ -35,8 +35,14 @@ export default function RootLayout({
             </h1>
 
             <div className="flex items-center gap-4">
+              <Link href="/products">
+                Products
+              </Link>
               <Link href="/orders">
                 My Orders
+              </Link>
+              <Link href="/cart">
+                Cart
               </Link>
               <Show when="signed-out">
                 <SignInButton />
