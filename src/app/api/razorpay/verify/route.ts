@@ -1,11 +1,23 @@
 import crypto from "crypto";
 import { NextResponse } from "next/server";
 import { prisma } from "@/server/db/prisma";
+import { aj } from "@/lib/arcjet";
 import { sendOrderEmail } from "@/features/emails/actions/send-order-email";
 import { sendAdminOrderAlert } from "@/features/emails/actions/send-admin-order-alert";
 
 export async function POST(request: Request) {
   try {
+    // ✅ FIXED: Moved safely inside the function body 
+    // ✅ FIXED: Passed second parameter stating this verification costs 1 token bucket item
+    const decision = await aj.protect(request, { requested: 1 });
+
+    if (decision.isDenied()) {
+      return NextResponse.json(
+        { error: "Forbidden" },
+        { status: 403 }
+      );
+    }
+
     const body = await request.json();
     const { razorpay_order_id, razorpay_payment_id, razorpay_signature } = body;
 
@@ -23,7 +35,7 @@ export async function POST(request: Request) {
     }
 
     // 2. Locate associated context order
-    const order = await prisma.order.findFirst({
+    const order = await prisma.order.findUnique({
       where: { razorpayOrderId: razorpay_order_id },
       include: { items: true },
     });
@@ -101,25 +113,21 @@ export async function POST(request: Request) {
           total: Number(order.totalAmount),
         });
       } catch (emailError) {
-        // Log notification errors separately so transaction success still goes through
         console.error("Background notification task failed:", emailError);
       }
     }
 
     if (user?.email) {
-  await sendAdminOrderAlert({
-    orderId:
-      order.id,
-
-    customerEmail:
-      user.email,
-
-    total:
-      Number(
-        order.totalAmount
-      ),
-  });
-}
+      try {
+        await sendAdminOrderAlert({
+          orderId: order.id,
+          customerEmail: user.email,
+          total: Number(order.totalAmount),
+        });
+      } catch (adminEmailError) {
+        console.error("Background Admin alert task failed:", adminEmailError);
+      }
+    }
 
     return NextResponse.json({ success: true, orderId: order.id });
   } catch (error) {

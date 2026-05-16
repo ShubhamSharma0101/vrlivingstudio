@@ -97,7 +97,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body>
+      <body suppressHydrationWarning>
         <ClerkProvider>
          <Script src="https://checkout.razorpay.com/v1/checkout.js" />
 
