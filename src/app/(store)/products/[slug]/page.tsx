@@ -12,6 +12,121 @@ type Props = {
   }>;
 };
 
+import type {
+  Metadata,
+} from "next";
+
+type MetadataProps = {
+  params: Promise<{
+    slug: string;
+  }>;
+};
+
+export async function generateMetadata({
+  params,
+}: MetadataProps): Promise<Metadata> {
+  const { slug } =
+    await params;
+
+  const product =
+    await prisma.product.findUnique({
+      where: {
+        slug,
+      },
+
+      include: {
+        images: {
+          where: {
+            isPrimary: true,
+          },
+
+          take: 1,
+        },
+
+        category: true,
+      },
+    });
+
+  if (!product) {
+    return {};
+  }
+
+  const image =
+    product.images[0]
+      ?.url ??
+    "/og-image.jpg";
+
+  const title =
+    `${product.title} | VR Living Studio`;
+
+  const description =
+    product.description.slice(
+      0,
+      160
+    );
+
+  const url =
+    `https://vrlivingstudio.com/products/${product.slug}`;
+
+  return {
+    title,
+
+    description,
+
+    alternates: {
+      canonical:
+        url,
+    },
+
+    keywords: [
+      product.title,
+      product.category
+        .name,
+      "Furniture",
+      "Home Decor",
+      "VR Living Studio",
+    ],
+
+    openGraph: {
+      title,
+
+      description,
+
+      url,
+
+      siteName:
+        "VR Living Studio",
+
+      images: [
+        {
+          url: image,
+
+          width: 1200,
+
+          height: 630,
+
+          alt:
+            product.title,
+        },
+      ],
+
+      type:
+        "website",
+    },
+
+    twitter: {
+      card:
+        "summary_large_image",
+
+      title,
+
+      description,
+
+      images: [image],
+    },
+  };
+}
+
 export default async function ProductPage({
   params,
 }: Props) {
