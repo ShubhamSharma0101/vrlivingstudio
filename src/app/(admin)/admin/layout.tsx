@@ -1,27 +1,23 @@
-import { redirect } from "next/navigation";
+import { AdminSidebar } from "@/features/admin/components/admin-sidebar";
 
-import { getCurrentUser } from "@/lib/auth";
+import { AdminTopbar } from "@/features/admin/components/admin-topbar";
 
-import { AdminLayoutShell } from "@/features/admin/components/admin-layout-shell";
-
-export default async function AdminLayout({
+export default function AdminLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const user = await getCurrentUser();
-
-  if (!user) {
-    redirect("/");
-  }
-
-  if (user.role !== "ADMIN") {
-    redirect("/");
-  }
-
   return (
-    <AdminLayoutShell>
-      {children}
-    </AdminLayoutShell>
+    <div className="flex min-h-screen bg-[#faf8f5]">
+      <AdminSidebar />
+
+      <div className="flex flex-1 flex-col">
+        <AdminTopbar />
+
+        <main className="flex-1 p-8">
+          {children}
+        </main>
+      </div>
+    </div>
   );
 }

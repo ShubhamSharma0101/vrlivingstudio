@@ -1,64 +1,125 @@
+"use client";
+
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 
 import {
   LayoutDashboard,
   Package,
-  ShoppingCart,
+  ShoppingBag,
+  ChartColumn,
+  Boxes,
   Users,
+  Settings,
 } from "lucide-react";
 
 const links = [
   {
-    href: "/admin",
     label: "Dashboard",
-    icon: LayoutDashboard,
+    href: "/admin",
+    icon:
+      LayoutDashboard,
   },
+
   {
-    href: "/admin/products",
     label: "Products",
+    href:
+      "/admin/products",
     icon: Package,
   },
+
   {
-    href: "/admin/orders",
     label: "Orders",
-    icon: ShoppingCart,
+    href:
+      "/admin/orders",
+    icon:
+      ShoppingBag,
   },
+
   {
-    href: "/admin/customers",
-    label: "Customers",
+    label:
+      "Inventory",
+    href:
+      "/admin/products/deleted",
+    icon: Boxes,
+  },
+
+  {
+    label:
+      "Analytics",
+    href:
+      "/admin/analytics",
+    icon:
+      ChartColumn,
+  },
+
+  {
+    label:
+      "Customers",
+    href:
+      "/admin/customers",
     icon: Users,
+  },
+
+  {
+    label:
+      "Settings",
+    href:
+      "/admin/settings",
+    icon:
+      Settings,
   },
 ];
 
 export function AdminSidebar() {
+  const pathname =
+    usePathname();
+
   return (
-    <aside className="w-64 border-r bg-white p-4">
-      <div className="mb-8">
-        <h2 className="text-xl font-bold">
+    <aside className="hidden w-[280px] shrink-0 border-r border-neutral-200 bg-white xl:flex xl:flex-col">
+      <div className="border-b p-8">
+        <h2 className="text-2xl font-bold tracking-tight">
           VR Living Studio
         </h2>
 
-        <p className="text-sm text-muted-foreground">
-          Admin Panel
+        <p className="mt-1 text-sm text-neutral-500">
+          Admin Dashboard
         </p>
       </div>
 
-      <nav className="space-y-2">
-        {links.map((link) => {
-          const Icon = link.icon;
+      <nav className="flex-1 space-y-2 p-5">
+        {links.map(
+          (link) => {
+            const Icon =
+              link.icon;
 
-          return (
-            <Link
-              key={link.href}
-              href={link.href}
-              className="flex items-center gap-3 rounded-lg px-3 py-2 transition hover:bg-muted"
-            >
-              <Icon className="h-5 w-5" />
+            const active =
+              pathname ===
+              link.href;
 
-              <span>{link.label}</span>
-            </Link>
-          );
-        })}
+            return (
+              <Link
+                key={
+                  link.href
+                }
+                href={
+                  link.href
+                }
+                className={`flex items-center gap-4 rounded-2xl px-5 py-4 transition ${
+                  active
+                    ? "bg-black text-white"
+                    : "text-neutral-600 hover:bg-neutral-100"
+                }`}
+              >
+                <Icon className="h-5 w-5" />
+
+                {
+                  link.label
+                }
+              </Link>
+            );
+          }
+        )}
       </nav>
     </aside>
   );
