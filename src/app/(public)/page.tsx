@@ -1,31 +1,27 @@
-import { getCurrentUser } from "@/lib/auth";
+import { HeroSection } from "@/features/home/components/hero-section";
+import { FeaturedCategories } from "@/features/home/components/featured-categories";
+import { FeaturedProducts } from "@/features/home/components/featured-products";
+import { TrustSection } from "@/features/home/components/trust-section";
+import { TestimonialSection } from "@/features/home/components/testimonial-section";
+import { NewsletterSection } from "@/features/home/components/newsletter-section";
+import { PremiumFooter } from "@/features/home/components/premium-footer";
 
-export default async function HomePage() {
-  const user = await getCurrentUser();
-
+export default function HomePage() {
   return (
-    <main className="p-10">
-      <h1 className="text-3xl font-bold">
-        VR Living Studio
-      </h1>
+    <>
+      <HeroSection />
 
-      {user ? (
-        <div className="mt-6 space-y-2">
-          <p>
-            Logged in as:
-          </p>
+      <FeaturedCategories />
 
-          <p>{user.email}</p>
+      <FeaturedProducts />
 
-          <p>{user.name}</p>
+      <TrustSection />
 
-          <p>{user.role}</p>
-        </div>
-      ) : (
-        <p className="mt-6">
-          Not signed in
-        </p>
-      )}
-    </main>
+      <TestimonialSection />
+
+      <NewsletterSection />
+
+      <PremiumFooter />
+    </>
   );
 }
