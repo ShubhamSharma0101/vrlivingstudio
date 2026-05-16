@@ -72,37 +72,38 @@ export function CreateProductForm({
   }
 
   return (
-    <form action={handleSubmit} className="space-y-4">
+    <form action={handleSubmit} className="space-y-5 max-w-2xl w-full">
       <div>
-        <label className="text-sm font-medium mb-1 block">Title</label>
+        <label className="text-sm font-medium text-neutral-700 mb-1.5 block">Title</label>
         <input
           name="title"
-          placeholder="Title"
+          placeholder="e.g., Premium Leather Backpack"
           defaultValue={initialData?.title}
-          className="w-full rounded-md border p-3"
+          className="h-12 w-full rounded-xl border border-neutral-200 bg-neutral-50 px-4 text-sm text-neutral-900 placeholder-neutral-400 outline-none transition-all focus:border-neutral-900 focus:bg-white focus:ring-4 focus:ring-neutral-100"
           required
         />
       </div>
 
       <div>
-        <label className="text-sm font-medium mb-1 block">Description</label>
+        <label className="text-sm font-medium text-neutral-700 mb-1.5 block">Description</label>
         <textarea
           name="description"
-          placeholder="Description"
+          placeholder="Provide a detailed description of the product features..."
           defaultValue={initialData?.description}
-          className="w-full rounded-md border p-3"
+          className="min-h-[150px] w-full rounded-xl border border-neutral-200 bg-neutral-50 p-4 text-sm text-neutral-900 placeholder-neutral-400 outline-none transition-all focus:border-neutral-900 focus:bg-white focus:ring-4 focus:ring-neutral-100 resize-none"
         />
       </div>
 
       <div>
-        <label className="text-sm font-medium mb-1 block">Price</label>
+        <label className="text-sm font-medium text-neutral-700 mb-1.5 block">Price</label>
         <input
           name="price"
           type="number"
+          min="0"
           step="0.01"
           defaultValue={initialData?.price}
-          placeholder="Price"
-          className="w-full rounded-md border p-3"
+          placeholder="0.00"
+          className="h-12 w-full rounded-xl border border-neutral-200 bg-neutral-50 px-4 text-sm text-neutral-900 placeholder-neutral-400 outline-none transition-all focus:border-neutral-900 focus:bg-white focus:ring-4 focus:ring-neutral-100"
           required
         />
       </div>
@@ -110,24 +111,25 @@ export function CreateProductForm({
       {/* Stock DOM input rendered ONLY during item creation pipelines */}
       {!isEditing && (
         <div>
-          <label className="text-sm font-medium mb-1 block text-gray-900">Initial Stock</label>
+          <label className="text-sm font-medium text-neutral-700 mb-1.5 block">Initial Stock</label>
           <input
             name="stock"
             type="number"
+            min="1"
             placeholder="Initial physical inventory quantity"
-            className="w-full rounded-md border p-3"
+            className="h-12 w-full rounded-xl border border-neutral-200 bg-neutral-50 px-4 text-sm text-neutral-900 placeholder-neutral-400 outline-none transition-all focus:border-neutral-900 focus:bg-white focus:ring-4 focus:ring-neutral-100"
             required
           />
         </div>
       )}
 
       <div>
-        <label className="text-sm font-medium mb-1 block">Category</label>
+        <label className="text-sm font-medium text-neutral-700 mb-1.5 block">Category</label>
         <select
           name="categoryId"
           defaultValue={initialData?.categoryId}
-          className="w-full rounded-md border p-3"
-        >
+          className="h-12 w-full rounded-xl border border-neutral-200 bg-neutral-50 px-4 text-sm text-neutral-900 outline-none transition-all focus:border-neutral-900 focus:bg-white focus:ring-4 focus:ring-neutral-100 cursor-pointer appearance-none bg-[url('data:image/svg+xml;bs12, %3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20fill%3D%22none%22%20viewBox%3D%220%200%2024%2024%22%20stroke-width%3D%221.5%22%20stroke%3D%22%236b7280%22%3E%3Cpath%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%20d%3D%22m19.5%208.25-7.5%207.5-7.5-7.5%22%20%2F%3E%3C%2Fsvg%3E')] bg-[length:1.25rem] bg-[right_1rem_center] bg-no-repeat pr-10"
+          >
           {categories.map((category) => (
             <option key={category.id} value={category.id}>
               {category.name}
@@ -138,12 +140,12 @@ export function CreateProductForm({
 
       {isEditing && (
         <div>
-          <label className="text-sm font-medium mb-1 block">Status</label>
+          <label className="text-sm font-medium text-neutral-700 mb-1.5 block">Status</label>
           <select
             name="status"
             defaultValue={initialData?.status}
-            className="w-full rounded-md border p-3"
-          >
+            className="h-12 w-full rounded-xl border border-neutral-200 bg-neutral-50 px-4 text-sm text-neutral-900 outline-none transition-all focus:border-neutral-900 focus:bg-white focus:ring-4 focus:ring-neutral-100 cursor-pointer appearance-none bg-[url('data:image/svg+xml;bs12, %3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20fill%3D%22none%22%20viewBox%3D%220%200%2024%2024%22%20stroke-width%3D%221.5%22%20stroke%3D%22%236b7280%22%3E%3Cpath%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%20d%3D%22m19.5%208.25-7.5%207.5-7.5-7.5%22%20%2F%3E%3C%2Fsvg%3E')] bg-[length:1.25rem] bg-[right_1rem_center] bg-no-repeat pr-10"
+            >
             {Object.values(ProductStatus).map((status) => (
               <option key={status} value={status}>
                 {status}
@@ -155,7 +157,7 @@ export function CreateProductForm({
 
       <button
         disabled={loading}
-        className="rounded-md bg-black px-4 py-2 text-white disabled:bg-gray-400 transition-colors"
+        className="inline-flex items-center justify-center w-full h-12 px-5 mt-2 rounded-xl bg-neutral-950 text-sm font-medium text-white shadow-sm hover:bg-neutral-800 active:scale-[0.99] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-neutral-950 transition-all disabled:bg-neutral-100 disabled:text-neutral-400 disabled:cursor-not-allowed disabled:transform-none"
       >
         {loading
           ? "Saving..."
