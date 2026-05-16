@@ -72,6 +72,39 @@ export const getCachedProduct =
     }
   );
 
+  export async function getRelatedProducts(
+  categoryId: string,
+  currentProductId: string
+) {
+  return prisma.product.findMany({
+    where: {
+      deletedAt: null,
+
+      status: "ACTIVE",
+
+      categoryId,
+
+      NOT: {
+        id: currentProductId,
+      },
+    },
+
+    include: {
+      images: {
+        where: {
+          isPrimary: true,
+        },
+
+        take: 1,
+      },
+
+      category: true,
+    },
+
+    take: 4,
+  });
+}
+
 export const getCachedCategories =
   unstable_cache(
     async () => {

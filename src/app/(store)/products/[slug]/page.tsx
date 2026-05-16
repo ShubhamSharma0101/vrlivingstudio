@@ -1,10 +1,11 @@
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 
-import { getCachedProduct } from "@/server/cache/storefront-cache";
+import { getCachedProduct, getRelatedProducts } from "@/server/cache/storefront-cache";
 import { ProductGallery } from "@/features/products/components/product-gallery";
 import { ProductBuyCard } from "@/features/products/components/product-buy-card";
 import { ProductTrustBadges } from "@/features/products/components/product-trust-badges";
+import { RelatedProducts } from "@/features/products/components/related-products";
 
 type Props = {
   params: Promise<{
@@ -70,14 +71,21 @@ export default async function ProductPage({ params }: Props) {
 
   const product = await getCachedProduct(slug);
 
-  // Safety Gate: Ensure missing, deleted, or draft data streams trigger Next.js 404
+  // 🛡️ 1. Safety Gate: Trigger 404 immediately if product is missing or inactive
   if (!product || product.deletedAt || product.status !== "ACTIVE") {
     notFound();
   }
 
+  // 🚀 2. FIXED: Moving this below the guard tells TypeScript 'product' is guaranteed to exist!
+  const relatedProducts = await getRelatedProducts(
+    product.categoryId,
+    product.id
+  );
+
   return (
     <div className="bg-[#faf8f5] py-20">
       <div className="container mx-auto px-4">
+        {/* Main Product Column Layout */}
         <div className="grid gap-16 lg:grid-cols-[1.2fr_0.8fr]">
           <ProductGallery images={product.images} />
 
@@ -93,6 +101,9 @@ export default async function ProductPage({ params }: Props) {
             <ProductTrustBadges />
           </div>
         </div>
+
+        {/* 🌟 UX Fix: Placed outside the upper grid to span full-width gracefully */}
+        <RelatedProducts products={relatedProducts} />
       </div>
     </div>
   );
